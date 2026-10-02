@@ -1,0 +1,10 @@
+# Godot 4+ specific ignores
+.godot/
+/android/
+
+# OS / tooling
+.DS_Store
+graft/.cache/
+
+# Export output
+creer-un-jeu-sur-godot-facilement-assets-main/builds/
