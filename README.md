@@ -15,10 +15,11 @@ Jeu d'esquive 2D réalisé avec Godot 4 en suivant la série « Créer son premi
 
 | Action | Touche |
 |---|---|
-| Se déplacer | Flèches du clavier (haut, bas, gauche, droite) |
+| Se déplacer (clavier) | Flèches (haut, bas, gauche, droite) |
+| Se déplacer (tactile) | Garder le doigt appuyé : le joueur se dirige vers lui |
 | Lancer / relancer une partie | Bouton **Start** (souris ou toucher) |
 
-Le joueur ne peut pas sortir de l'écran.
+Le clavier est prioritaire sur le tactile. Le joueur ne peut pas sortir de l'écran.
 
 ### Monstres
 
@@ -30,7 +31,7 @@ Trois types, choisis au hasard à chaque apparition : `ghost`, `skeleton`, `slim
 
 - **Moteur** : Godot 4.7, rendu Forward+
 - **Langage** : GDScript
-- **Exports configurés** : Web (HTML5) et macOS
+- **Exports configurés** : Android, Web (HTML5) et macOS
 
 ### Format d'écran
 
@@ -51,7 +52,7 @@ Le chemin d'apparition des monstres (`MonsterPath`) suit le contour 1080 x 2400 
 ```
 .
 ├── project.godot                 # Configuration du projet (écran, entrées, scène principale)
-├── export_presets.cfg            # Préréglages d'export Web et macOS
+├── export_presets.cfg            # Préréglages d'export Android, Web et macOS
 ├── icon.svg
 └── creer-un-jeu-sur-godot-facilement-assets-main/
     ├── scenes/
@@ -61,12 +62,12 @@ Le chemin d'apparition des monstres (`MonsterPath`) suit le contour 1080 x 2400 
     │   └── hud.tscn              # Interface (CanvasLayer)
     ├── scripts/
     │   ├── main.gd               # Boucle de jeu : score, apparition des monstres, game over
-    │   ├── player.gd             # Déplacement, collision, signal hit
+    │   ├── player.gd             # Déplacement clavier et tactile, collision, signal hit
     │   ├── monsters.gd           # Animation aléatoire, suppression hors écran
     │   └── hud.gd                # Messages, score, bouton Start
     ├── art/                      # Sprites, musique, son de game over
     ├── fonts/Pixeled.ttf         # Police pixel
-    └── builds/                   # Sortie de l'export Web (ignorée par git)
+    └── builds/                   # Sorties des exports Web et Android (ignorées par git)
 ```
 
 ### Composants
@@ -74,7 +75,7 @@ Le chemin d'apparition des monstres (`MonsterPath`) suit le contour 1080 x 2400 
 | Scène | Nœud racine | Responsabilité |
 |---|---|---|
 | `main.tscn` | `Node` | Orchestre la partie. Possède les timers `StartTimer` (2 s, une fois), `ScoreTimer` (1 s) et `MonsterTimer` (0,5 s), le chemin `MonsterPath`, le marqueur `StartPosition` et les lecteurs audio. |
-| `player.tscn` | `Area2D` | Lit les actions `move_*`, déplace le joueur à 400 px/s, le borne à l'écran. Émet `hit` au contact d'un corps et désactive sa collision. |
+| `player.tscn` | `Area2D` | Lit les actions `move_*` ou suit le doigt, déplace le joueur à 400 px/s, le borne à l'écran. Émet `hit` au contact d'un corps et désactive sa collision. |
 | `monsters.tscn` | `RigidBody2D` | Sans gravité, `collision_mask = 0` (les monstres ne se heurtent pas entre eux). Joue une animation au hasard ; `VisibleOnScreenNotifier2D` le libère en sortie d'écran. |
 | `hud.tscn` | `CanvasLayer` | Affiche score et messages, émet `start_game` au clic sur Start. |
 
@@ -106,6 +107,10 @@ sequenceDiagram
 
 Les actions `move_left`, `move_right`, `move_up` et `move_down` sont déclarées dans `project.godot` et liées aux flèches du clavier. `player.gd` les combine avec `Input.get_vector`, ce qui normalise la vitesse en diagonale.
 
+Tactile : `_input` mémorise la position du doigt (`InputEventScreenTouch`, `InputEventScreenDrag`) tant qu'il est appuyé. Si aucune flèche n'est pressée, `_read_direction` renvoie la direction vers le doigt, ou un vecteur nul à moins de 10 px (`TOUCH_DEAD_ZONE`) pour éviter que le joueur tremble. Les positions reçues sont déjà converties dans le repère 1080 x 2400 par Godot.
+
+`input_devices/pointing/emulate_touch_from_mouse=true` transforme le clic souris en toucher : le comportement mobile se teste sur ordinateur.
+
 ## Lancer le projet
 
 1. Installer [Godot 4.7](https://godotengine.org/download).
@@ -122,15 +127,35 @@ En ligne de commande (macOS) :
 
 Les préréglages sont dans `export_presets.cfg` :
 
+- **Android** : APK `arm64-v8a`, package `com.lucaslaurens.petitjeututorial`, plein écran (mode immersif), orientation portrait. Sortie : `creer-un-jeu-sur-godot-facilement-assets-main/builds/android/Petit_jeu_tutorial.apk`.
 - **Web** : génère `creer-un-jeu-sur-godot-facilement-assets-main/builds/Petit_jeu_tutorial.html` (servir le dossier via un serveur HTTP, pas en `file://`).
 - **macOS** : chemin de sortie à choisir au moment de l'export.
 
 Menu **Projet > Exporter**, choisir le préréglage puis **Exporter le projet**. Les modèles d'export Godot doivent être installés.
 
+### Android
+
+Prérequis, réglés dans **Éditeur > Paramètres de l'éditeur > Export > Android** : SDK Android, JDK 17 ou plus, keystore de debug (Godot en génère un).
+
+APK de debug en ligne de commande :
+
+```bash
+/Applications/Godot.app/Contents/MacOS/Godot --headless --path . --export-debug Android creer-un-jeu-sur-godot-facilement-assets-main/builds/android/Petit_jeu_tutorial.apk
+```
+
+Installation sur le téléphone (débogage USB activé dans les options développeur) :
+
+```bash
+adb install -r creer-un-jeu-sur-godot-facilement-assets-main/builds/android/Petit_jeu_tutorial.apk
+```
+
+Avec le téléphone branché, l'icône Android en haut à droite de l'éditeur installe et lance le jeu en un clic.
+
+Pour publier (Play Store) : créer un keystore de release et le renseigner dans le préréglage. Godot range ces identifiants dans `.godot/export_credentials.cfg`, qui n'est pas versionné.
+
 ## Limites connues
 
-- **Pas de contrôle tactile** : le déplacement ne se fait qu'au clavier. Sur téléphone, le bouton Start répond au toucher mais le joueur ne peut pas bouger.
-- **Pas de préréglage d'export Android** : à ajouter (SDK Android et keystore requis) pour installer le jeu sur le téléphone.
+- **Pas de keystore de release** : seul l'export de debug est prêt.
 - **Monstres jamais nettoyés au game over** : ceux encore à l'écran continuent leur trajet après la fin de la partie.
 
 ## Crédits
