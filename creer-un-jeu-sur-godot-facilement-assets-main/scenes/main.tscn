@@ -8,7 +8,7 @@
 
 [sub_resource type="Curve2D" id="Curve2D_fga15"]
 _data = {
-"points": PackedVector2Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1152, 0, 0, 0, 0, 0, 1152, 648, 0, 0, 0, 0, 0, 648, 0, 0, 0, 0, 0, 8)
+"points": PackedVector2Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1080, 0, 0, 0, 0, 0, 1080, 2400, 0, 0, 0, 0, 0, 2400, 0, 0, 0, 0, 0, 0)
 }
 point_count = 5
 
@@ -54,7 +54,7 @@ wait_time = 2.0
 one_shot = true
 
 [node name="StartPosition" type="Marker2D" parent="." unique_id=191699136]
-position = Vector2(240, 450)
+position = Vector2(540, 1500)
 
 [node name="MonsterPath" type="Path2D" parent="." unique_id=1537113467]
 curve = SubResource("Curve2D_fga15")
