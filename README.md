@@ -152,6 +152,24 @@ Prérequis : Godot 4.7.2 et gdtoolkit 4.5.0, les mêmes versions qu'en CI.
 uv tool install "gdtoolkit==4.5.0"
 ```
 
+`check.sh` appelle `godot` : le binaire doit être dans le `PATH`. Sur macOS, l'application n'y est pas par défaut ; un lien symbolique dans un dossier du `PATH` suffit :
+
+```bash
+ln -sf /Applications/Godot.app/Contents/MacOS/Godot ~/.local/bin/godot
+```
+
+```bash
+godot --version
+```
+
+La commande doit afficher `4.7.2.stable`. Puis :
+
+```bash
+./check.sh
+```
+
+Sans lien, la variable `GODOT` indique le binaire pour une seule exécution :
+
 ```bash
 GODOT=/Applications/Godot.app/Contents/MacOS/Godot ./check.sh
 ```
