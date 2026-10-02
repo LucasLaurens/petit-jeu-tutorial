@@ -1,0 +1,67 @@
+[gd_scene format=3 uid="uid://bpixs4wur4t70"]
+
+[ext_resource type="Script" uid="uid://dfttkgwtbrrj6" path="res://creer-un-jeu-sur-godot-facilement-assets-main/scripts/monsters.gd" id="1_nuki8"]
+[ext_resource type="Texture2D" uid="uid://da8desg4tdisq" path="res://creer-un-jeu-sur-godot-facilement-assets-main/art/enemyFlyingAlt_1.png" id="2_tqnsy"]
+[ext_resource type="Texture2D" uid="uid://by6isi4pcdrsk" path="res://creer-un-jeu-sur-godot-facilement-assets-main/art/enemyFlyingAlt_2.png" id="3_kac7i"]
+[ext_resource type="Texture2D" uid="uid://dtbhu3y1tc1c" path="res://creer-un-jeu-sur-godot-facilement-assets-main/art/enemyWalking_1.png" id="4_q4hjn"]
+[ext_resource type="Texture2D" uid="uid://b43jnj3rrr8el" path="res://creer-un-jeu-sur-godot-facilement-assets-main/art/enemyWalking_2.png" id="5_87sw4"]
+[ext_resource type="Texture2D" uid="uid://lx7rksa8odrx" path="res://creer-un-jeu-sur-godot-facilement-assets-main/art/enemySwimming_1.png" id="6_7ypvq"]
+[ext_resource type="Texture2D" uid="uid://ckl0i36yfmtjo" path="res://creer-un-jeu-sur-godot-facilement-assets-main/art/enemySwimming_2.png" id="7_im7fj"]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_6ov8r"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("2_tqnsy")
+}, {
+"duration": 1.0,
+"texture": ExtResource("3_kac7i")
+}],
+"loop": 1,
+"name": &"ghost",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("4_q4hjn")
+}, {
+"duration": 1.0,
+"texture": ExtResource("5_87sw4")
+}],
+"loop": 1,
+"name": &"skeleton",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("6_7ypvq")
+}, {
+"duration": 1.0,
+"texture": ExtResource("7_im7fj")
+}],
+"loop": 1,
+"name": &"slime",
+"speed": 5.0
+}]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_4maca"]
+radius = 40.0
+height = 80.0
+
+[node name="Monsters" type="RigidBody2D" unique_id=2029189262]
+collision_mask = 0
+gravity_scale = 0.0
+script = ExtResource("1_nuki8")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1869037103]
+texture_filter = 1
+scale = Vector2(5, 5)
+sprite_frames = SubResource("SpriteFrames_6ov8r")
+animation = &"slime"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=2058587015]
+shape = SubResource("CapsuleShape2D_4maca")
+
+[node name="VisibleOnScreenNotifier2D" type="VisibleOnScreenNotifier2D" parent="." unique_id=1303858322]
+
+[connection signal="screen_exited" from="VisibleOnScreenNotifier2D" to="." method="_on_visible_on_screen_notifier_2d_screen_exited"]
