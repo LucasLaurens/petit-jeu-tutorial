@@ -51,9 +51,15 @@ Le chemin d'apparition des monstres (`MonsterPath`) suit le contour 1080 x 2400 
 
 ```
 .
-├── project.godot                 # Configuration du projet (écran, entrées, scène principale)
+├── project.godot                 # Configuration du projet (écran, entrées, warnings, plugins)
 ├── export_presets.cfg            # Préréglages d'export Android, Web et macOS
 ├── icon.svg
+├── check.sh                      # Format, lint, analyse statique et tests (local et CI)
+├── .gutconfig.json               # Configuration de GUT (dossier des tests)
+├── .github/workflows/ci.yml      # CI GitHub Actions : lance check.sh
+├── addons/gut/                   # Framework de tests GUT 9.7.1 (vendu tel quel)
+├── test/
+│   └── test_player.gd            # Tests du déplacement, de la zone morte et de la collision
 └── creer-un-jeu-sur-godot-facilement-assets-main/
     ├── scenes/
     │   ├── main.tscn             # Scène racine : assemble joueur, HUD, timers, musique
@@ -62,9 +68,9 @@ Le chemin d'apparition des monstres (`MonsterPath`) suit le contour 1080 x 2400 
     │   └── hud.tscn              # Interface (CanvasLayer)
     ├── scripts/
     │   ├── main.gd               # Boucle de jeu : score, apparition des monstres, game over
-    │   ├── player.gd             # Déplacement clavier et tactile, collision, signal hit
-    │   ├── monsters.gd           # Animation aléatoire, suppression hors écran
-    │   └── hud.gd                # Messages, score, bouton Start
+    │   ├── player.gd             # Player : déplacement clavier et tactile, collision, signal hit
+    │   ├── monsters.gd           # Monster : animation aléatoire, suppression hors écran
+    │   └── hud.gd                # Hud : messages, score, bouton Start
     ├── art/                      # Sprites, musique, son de game over
     ├── fonts/Pixeled.ttf         # Police pixel
     └── builds/                   # Sorties des exports Web et Android (ignorées par git)
@@ -122,6 +128,45 @@ En ligne de commande (macOS) :
 ```bash
 /Applications/Godot.app/Contents/MacOS/Godot --path .
 ```
+
+## Qualité et CI
+
+Quatre vérifications, regroupées dans `check.sh` et lancées par GitHub Actions (`.github/workflows/ci.yml`) à chaque push sur `main` et à chaque pull request :
+
+| Étape | Outil | Ce qui échoue |
+|---|---|---|
+| Format | `gdformat --check` ([gdtoolkit](https://github.com/Scony/godot-gdscript-toolkit)) | Code non formaté (indentation, `;` en fin de ligne, espaces) |
+| Lint | `gdlint` (gdtoolkit) | Conventions de nommage, ordre des déclarations, longueur de ligne |
+| Analyse statique | `godot --import` | Variable non typée, accès non sûr à une propriété ou méthode, variable ou paramètre inutilisé |
+| Tests | [GUT](https://github.com/bitwes/Gut) | Test en échec, ou fichier de test qui ne se charge pas |
+
+L'analyse statique repose sur le parseur de Godot : la section `[debug]` de `project.godot` passe les warnings de typage en erreurs (`2`). Le dossier `addons/` est exclu par Godot. Les scripts déclarent un `class_name` (`Player`, `Hud`, `Monster`) pour que `main.gd` et les tests les manipulent avec un type précis.
+
+Godot et GUT renvoient le code de sortie 0 quand un script ne se charge pas (GUT ignore alors le fichier de test). `check.sh` lit donc la sortie et échoue sur `SCRIPT ERROR`, `Parse Error`, `GUT ERROR` ou `Ignoring script`.
+
+### Lancer les vérifications en local
+
+Prérequis : Godot 4.7.2 et gdtoolkit 4.5.0, les mêmes versions qu'en CI.
+
+```bash
+uv tool install "gdtoolkit==4.5.0"
+```
+
+```bash
+GODOT=/Applications/Godot.app/Contents/MacOS/Godot ./check.sh
+```
+
+Pour reformater le code avant de committer :
+
+```bash
+gdformat creer-un-jeu-sur-godot-facilement-assets-main/scripts test
+```
+
+Les tests se lancent aussi depuis l'éditeur : panneau **GUT** en bas, puis **Run All**.
+
+### Écrire un test
+
+Un fichier `test/test_*.gd` qui étend `GutTest`, avec des méthodes `test_*` structurées en Arrange / Act / Assert. Les tests du joueur coupent `_process` et `_input`, puis appellent ces méthodes à la main : la frame est contrôlée et le résultat ne dépend pas du moteur.
 
 ## Exporter
 

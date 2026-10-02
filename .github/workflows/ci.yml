@@ -1,0 +1,29 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    env:
+      GODOT_VERSION: 4.7.2-stable
+      GDTOOLKIT_VERSION: 4.5.0
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install gdtoolkit
+        run: pipx install "gdtoolkit==${GDTOOLKIT_VERSION}"
+
+      - name: Install Godot
+        run: |
+          archive="Godot_v${GODOT_VERSION}_linux.x86_64"
+          curl -fsSL -o godot.zip "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}/${archive}.zip"
+          unzip -q godot.zip
+          sudo mv "${archive}" /usr/local/bin/godot
+          rm godot.zip
+
+      - name: Format, lint, analyse, test
+        run: ./check.sh
