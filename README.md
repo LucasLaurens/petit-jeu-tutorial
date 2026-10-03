@@ -2,16 +2,16 @@
 
 <img src="icon.png" alt="Logo : un fantôme devant la lune" width="128">
 
-Jeu d'esquive 2D réalisé avec Godot 4 en suivant la série « Créer son premier jeu vidéo facilement sur Godot » de TUTO UNITY FR. Le joueur se déplace sur l'écran et doit éviter des monstres qui le traversent ; chaque seconde de survie rapporte un point.
+**Ghost Dodge** est un jeu d'esquive 2D réalisé avec Godot 4 en suivant la série « Créer son premier jeu vidéo facilement sur Godot » de TUTO UNITY FR. Le joueur se déplace sur l'écran et doit éviter des monstres qui le traversent ; chaque seconde de survie rapporte un point.
 
 ## Fonctionnel
 
 ### Déroulement d'une partie
 
-1. L'écran titre affiche le logo (qui flotte doucement), le score, le message « Dodge the enemies! » et un bouton **Start**.
+1. L'écran titre affiche le logo (qui flotte doucement), le nom « Ghost Dodge », le score, le message « Dodge the enemies! » et un bouton **Start**.
 2. Un clic sur **Start** supprime les monstres restants de la partie précédente, lance la musique, place le joueur au centre-bas de l'écran et affiche « GET READY! ».
 3. Après 2 secondes, les monstres commencent à apparaître (un toutes les 0,5 s) et le score augmente d'un point par seconde.
-4. Au premier contact avec un monstre : la musique s'arrête, un son de game over est joué, « GAME OVER! » s'affiche, puis l'écran titre (logo et bouton **Start**) réapparaît pour rejouer. Les monstres déjà à l'écran finissent leur trajet en fond jusqu'au prochain **Start**.
+4. Au premier contact avec un monstre : la musique s'arrête, un son de game over est joué, « GAME OVER! » s'affiche, puis l'écran titre (logo, nom et bouton **Start**) réapparaît pour rejouer. Les monstres déjà à l'écran finissent leur trajet en fond jusqu'au prochain **Start**.
 
 ### Contrôles
 
@@ -67,7 +67,7 @@ Le chemin d'apparition des monstres (`MonsterPath`) suit le contour 1080 x 2400 
 ├── tools/
 │   └── generate_art.py           # Génère le fond et le logo en pixel art (Python + Pillow)
 ├── test/
-│   ├── test_hud.gd               # Tests de l'écran titre : logo et bouton Start
+│   ├── test_hud.gd               # Tests de l'écran titre : nom, affichage et masquage
 │   ├── test_main.gd              # Tests du redémarrage : nettoyage des monstres, timers
 │   └── test_player.gd            # Tests du déplacement, de la zone morte et de la collision
 └── creer-un-jeu-sur-godot-facilement-assets-main/
@@ -95,7 +95,7 @@ Le chemin d'apparition des monstres (`MonsterPath`) suit le contour 1080 x 2400 
 | `main.tscn` | `Node` | Orchestre la partie. Affiche le fond (`Background`, un `TextureRect`). Possède les timers `StartTimer` (2 s, une fois), `ScoreTimer` (1 s) et `MonsterTimer` (0,5 s), le chemin `MonsterPath`, le marqueur `StartPosition` et les lecteurs audio. |
 | `player.tscn` | `Area2D` | Lit les actions `move_*` ou suit le doigt, déplace le joueur à 400 px/s, le borne à l'écran. Émet `hit` au contact d'un corps et désactive sa collision. |
 | `monsters.tscn` | `RigidBody2D` | Sans gravité, `collision_mask = 0` (les monstres ne se heurtent pas entre eux). Joue une animation au hasard ; `VisibleOnScreenNotifier2D` le libère en sortie d'écran. Rejoint le groupe `Monster.GROUP` pour que `main.gd` le supprime au lancement d'une partie. |
-| `hud.tscn` | `CanvasLayer` | Affiche score et messages, émet `start_game` au clic sur Start. L'écran titre (`Logo` et `StartButton`) est masqué pendant la partie et revient après le game over. |
+| `hud.tscn` | `CanvasLayer` | Affiche score et messages, émet `start_game` au clic sur Start. L'écran titre (`TitleScreen` : `Logo`, `Title`, `StartButton`) est masqué pendant la partie et revient après le game over. `Title` affiche `application/config/name` de `project.godot`. |
 
 ### Flux des signaux
 
@@ -221,7 +221,7 @@ Les icônes adaptatives Android placent le logo au centre d'un canevas plus gran
 
 Les préréglages sont dans `export_presets.cfg` :
 
-- **Android** : APK `arm64-v8a`, package `com.lucaslaurens.petitjeututorial`, plein écran (mode immersif), orientation portrait, icônes du lanceur dans `art/icons/`. Sortie : `creer-un-jeu-sur-godot-facilement-assets-main/builds/android/Petit_jeu_tutorial.apk`.
+- **Android** : APK `arm64-v8a`, package `com.lucaslaurens.petitjeututorial`, plein écran (mode immersif), orientation portrait, icônes du lanceur dans `art/icons/`. Le nom de l'application sur le téléphone vient de `application/config/name` (« Ghost Dodge »). Sortie : `creer-un-jeu-sur-godot-facilement-assets-main/builds/android/Petit_jeu_tutorial.apk`.
 - **Web** : génère `creer-un-jeu-sur-godot-facilement-assets-main/builds/Petit_jeu_tutorial.html` (servir le dossier via un serveur HTTP, pas en `file://`).
 - **macOS** : chemin de sortie à choisir au moment de l'export.
 

@@ -7,18 +7,22 @@ signal start_game
 const STARTING_MESSAGE: String = "DODGE THE ENEMIES!"
 const ENDING_MESSAGE: String = "GAME OVER!"
 const START_BUTTON_DELAY: float = 1.0
+## The game name lives in project.godot, which also names the window and the Android app.
+const GAME_NAME_SETTING: String = "application/config/name"
 ## The logo floats up and down like the ghost it shows.
 const LOGO_FLOAT_HEIGHT: float = 20.0
 const LOGO_FLOAT_DURATION: float = 1.2
 
-@onready var _logo: TextureRect = $Logo
+@onready var _title_screen: Control = $TitleScreen
+@onready var _logo: TextureRect = $TitleScreen/Logo
+@onready var _title: Label = $TitleScreen/Title
 @onready var _message: Label = $Message
 @onready var _message_timer: Timer = $MessageTimer
-@onready var _start_button: Button = $StartButton
 @onready var _score_label: Label = $ScoreLabel
 
 
 func _ready() -> void:
+	_title.text = str(ProjectSettings.get_setting(GAME_NAME_SETTING))
 	var float_tween := create_tween().set_loops().set_trans(Tween.TRANS_SINE)
 	(
 		float_tween
@@ -54,13 +58,11 @@ func update_score(score: int) -> void:
 
 
 func _show_title_screen() -> void:
-	_logo.show()
-	_start_button.show()
+	_title_screen.show()
 
 
 func _on_start_button_pressed() -> void:
-	_logo.hide()
-	_start_button.hide()
+	_title_screen.hide()
 	start_game.emit()
 
 

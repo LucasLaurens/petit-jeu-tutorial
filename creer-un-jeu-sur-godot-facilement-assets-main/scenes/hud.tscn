@@ -24,7 +24,17 @@ text = "0"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="Logo" type="TextureRect" parent="." unique_id=1740263311]
+[node name="TitleScreen" type="Control" parent="." unique_id=1592830417]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Logo" type="TextureRect" parent="TitleScreen" unique_id=1740263311]
+layout_mode = 1
 texture_filter = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -40,6 +50,27 @@ grow_vertical = 2
 texture = ExtResource("2_logo")
 expand_mode = 1
 stretch_mode = 5
+
+[node name="Title" type="Label" parent="TitleScreen" unique_id=1166042981]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -500.0
+offset_top = -330.0
+offset_right = 500.0
+offset_bottom = -170.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.85490197, 0.83137256, 0.36862746, 1)
+theme_override_colors/font_outline_color = Color(0.078431375, 0.047058824, 0.10980392, 1)
+theme_override_constants/outline_size = 24
+theme_override_fonts/font = ExtResource("1_gmimf")
+theme_override_font_sizes/font_size = 80
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="Message" type="Label" parent="." unique_id=560502217]
 anchors_preset = 8
@@ -61,7 +92,8 @@ autowrap_mode = 3
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="StartButton" type="Button" parent="." unique_id=2014600456]
+[node name="StartButton" type="Button" parent="TitleScreen" unique_id=2014600456]
+layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
 anchor_top = 1.0
@@ -84,5 +116,5 @@ icon_alignment = 1
 wait_time = 2.0
 one_shot = true
 
-[connection signal="pressed" from="StartButton" to="." method="_on_start_button_pressed"]
+[connection signal="pressed" from="TitleScreen/StartButton" to="." method="_on_start_button_pressed"]
 [connection signal="timeout" from="MessageTimer" to="." method="_on_message_timer_timeout"]
