@@ -5,6 +5,7 @@
 [ext_resource type="PackedScene" uid="uid://bpixs4wur4t70" path="res://creer-un-jeu-sur-godot-facilement-assets-main/scenes/monsters.tscn" id="2_12t2p"]
 [ext_resource type="PackedScene" uid="uid://bg4d073wbghdg" path="res://creer-un-jeu-sur-godot-facilement-assets-main/scenes/hud.tscn" id="4_l5hhx"]
 [ext_resource type="AudioStream" uid="uid://bf58j8qlqqddc" path="res://creer-un-jeu-sur-godot-facilement-assets-main/art/gameover.wav" id="5_myi2b"]
+[ext_resource type="Texture2D" uid="uid://vwnqtoamqla" path="res://creer-un-jeu-sur-godot-facilement-assets-main/art/graveyard_map.png" id="6_bgmap"]
 
 [sub_resource type="Curve2D" id="Curve2D_fga15"]
 _data = {
@@ -33,13 +34,16 @@ loop = true
 script = ExtResource("1_tetyy")
 monster_scene = ExtResource("2_12t2p")
 
-[node name="ColorRect" type="ColorRect" parent="." unique_id=1887180322]
+[node name="Background" type="TextureRect" parent="." unique_id=1887180322]
+texture_filter = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(3.164597e-05, 0.65352535, 0.2254372, 1)
+texture = ExtResource("6_bgmap")
+expand_mode = 1
+stretch_mode = 6
 
 [node name="Player" parent="." unique_id=1255227396 instance=ExtResource("1_fga15")]
 speed = 400

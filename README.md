@@ -1,5 +1,7 @@
 # Petit jeu tutorial
 
+<img src="icon.png" alt="Logo : un fantôme devant la lune" width="128">
+
 Jeu d'esquive 2D réalisé avec Godot 4 en suivant la série « Créer son premier jeu vidéo facilement sur Godot » de TUTO UNITY FR. Le joueur se déplace sur l'écran et doit éviter des monstres qui le traversent ; chaque seconde de survie rapporte un point.
 
 ## Fonctionnel
@@ -20,6 +22,10 @@ Jeu d'esquive 2D réalisé avec Godot 4 en suivant la série « Créer son premi
 | Lancer / relancer une partie | Bouton **Start** (souris ou toucher) |
 
 Le clavier est prioritaire sur le tactile. Le joueur ne peut pas sortir de l'écran.
+
+### Décor
+
+Un cimetière de nuit en pixel art : chemins de terre, tombes clôturées, arbres morts, ossements, bougies et une mare de slime. Les tons restent sombres pour que le joueur et les monstres ressortent.
 
 ### Monstres
 
@@ -53,11 +59,13 @@ Le chemin d'apparition des monstres (`MonsterPath`) suit le contour 1080 x 2400 
 .
 ├── project.godot                 # Configuration du projet (écran, entrées, warnings, plugins)
 ├── export_presets.cfg            # Préréglages d'export Android, Web et macOS
-├── icon.svg
+├── icon.png                      # Logo du jeu (icône projet, Web, macOS), 512 x 512
 ├── check.sh                      # Format, lint, analyse statique et tests (local et CI)
 ├── .gutconfig.json               # Configuration de GUT (dossier des tests)
 ├── .github/workflows/ci.yml      # CI GitHub Actions : lance check.sh
 ├── addons/gut/                   # Framework de tests GUT 9.7.1 (vendu tel quel)
+├── tools/
+│   └── generate_art.py           # Génère le fond et le logo en pixel art (Python + Pillow)
 ├── test/
 │   ├── test_main.gd              # Tests du redémarrage : nettoyage des monstres, timers
 │   └── test_player.gd            # Tests du déplacement, de la zone morte et de la collision
@@ -73,6 +81,8 @@ Le chemin d'apparition des monstres (`MonsterPath`) suit le contour 1080 x 2400 
     │   ├── monsters.gd           # Monster : animation aléatoire, suppression hors écran
     │   └── hud.gd                # Hud : messages, score, bouton Start
     ├── art/                      # Sprites, musique, son de game over
+    │   ├── graveyard_map.png     # Fond : cimetière 180 x 400, généré
+    │   └── icons/                # Icônes Android (lanceur et adaptatives), générées
     ├── fonts/Pixeled.ttf         # Police pixel
     └── builds/                   # Sorties des exports Web et Android (ignorées par git)
 ```
@@ -81,7 +91,7 @@ Le chemin d'apparition des monstres (`MonsterPath`) suit le contour 1080 x 2400 
 
 | Scène | Nœud racine | Responsabilité |
 |---|---|---|
-| `main.tscn` | `Node` | Orchestre la partie. Possède les timers `StartTimer` (2 s, une fois), `ScoreTimer` (1 s) et `MonsterTimer` (0,5 s), le chemin `MonsterPath`, le marqueur `StartPosition` et les lecteurs audio. |
+| `main.tscn` | `Node` | Orchestre la partie. Affiche le fond (`Background`, un `TextureRect`). Possède les timers `StartTimer` (2 s, une fois), `ScoreTimer` (1 s) et `MonsterTimer` (0,5 s), le chemin `MonsterPath`, le marqueur `StartPosition` et les lecteurs audio. |
 | `player.tscn` | `Area2D` | Lit les actions `move_*` ou suit le doigt, déplace le joueur à 400 px/s, le borne à l'écran. Émet `hit` au contact d'un corps et désactive sa collision. |
 | `monsters.tscn` | `RigidBody2D` | Sans gravité, `collision_mask = 0` (les monstres ne se heurtent pas entre eux). Joue une animation au hasard ; `VisibleOnScreenNotifier2D` le libère en sortie d'écran. Rejoint le groupe `Monster.GROUP` pour que `main.gd` le supprime au lancement d'une partie. |
 | `hud.tscn` | `CanvasLayer` | Affiche score et messages, émet `start_game` au clic sur Start. |
@@ -188,11 +198,29 @@ Les tests se lancent aussi depuis l'éditeur : panneau **GUT** en bas, puis **Ru
 
 Un fichier `test/test_*.gd` qui étend `GutTest`, avec des méthodes `test_*` structurées en Arrange / Act / Assert. Les tests du joueur coupent `_process` et `_input`, puis appellent ces méthodes à la main : la frame est contrôlée et le résultat ne dépend pas du moteur.
 
+## Graphismes générés
+
+Le fond et le logo sont produits par `tools/generate_art.py`, avec une graine fixe : chaque exécution donne les mêmes fichiers.
+
+```bash
+uv run --with pillow tools/generate_art.py
+```
+
+| Choix | Raison |
+|---|---|
+| Fond en 180 x 400, agrandi 6 fois | Pixels de taille proche de ceux des sprites (agrandis 7 fois) |
+| Filtre `Nearest` sur `Background` | Pixels nets, sans flou |
+| `stretch_mode` « keep aspect covered » | Remplit les écrans d'un autre ratio sans déformer |
+| Tons sombres, palette DawnBringer 16 des sprites | Le décor reste derrière le jeu |
+| Logo construit sur le sprite du fantôme | Même style que le jeu |
+
+Les icônes adaptatives Android placent le logo au centre d'un canevas plus grand : les lanceurs qui découpent un cercle ne le coupent pas.
+
 ## Exporter
 
 Les préréglages sont dans `export_presets.cfg` :
 
-- **Android** : APK `arm64-v8a`, package `com.lucaslaurens.petitjeututorial`, plein écran (mode immersif), orientation portrait. Sortie : `creer-un-jeu-sur-godot-facilement-assets-main/builds/android/Petit_jeu_tutorial.apk`.
+- **Android** : APK `arm64-v8a`, package `com.lucaslaurens.petitjeututorial`, plein écran (mode immersif), orientation portrait, icônes du lanceur dans `art/icons/`. Sortie : `creer-un-jeu-sur-godot-facilement-assets-main/builds/android/Petit_jeu_tutorial.apk`.
 - **Web** : génère `creer-un-jeu-sur-godot-facilement-assets-main/builds/Petit_jeu_tutorial.html` (servir le dossier via un serveur HTTP, pas en `file://`).
 - **macOS** : chemin de sortie à choisir au moment de l'export.
 
@@ -227,3 +255,4 @@ Pour publier (Play Store) : créer un keystore de release et le renseigner dans 
 - Assets et série de tutoriels : [TUTO UNITY FR](https://www.youtube.com/c/tutounityfr), voir `creer-un-jeu-sur-godot-facilement-assets-main/README.md` et `LICENSE`.
 - Musique « House In a Forest Loop » : HorrorPen.
 - Police : Pixeled.
+- Fond et logo : générés par `tools/generate_art.py`, le logo reprend le sprite du fantôme.
