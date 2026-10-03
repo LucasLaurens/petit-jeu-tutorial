@@ -8,10 +8,10 @@ Jeu d'esquive 2D réalisé avec Godot 4 en suivant la série « Créer son premi
 
 ### Déroulement d'une partie
 
-1. L'écran d'accueil affiche le score, le message « Dodge the enemies! » et un bouton **Start**.
+1. L'écran titre affiche le logo (qui flotte doucement), le score, le message « Dodge the enemies! » et un bouton **Start**.
 2. Un clic sur **Start** supprime les monstres restants de la partie précédente, lance la musique, place le joueur au centre-bas de l'écran et affiche « GET READY! ».
 3. Après 2 secondes, les monstres commencent à apparaître (un toutes les 0,5 s) et le score augmente d'un point par seconde.
-4. Au premier contact avec un monstre : la musique s'arrête, un son de game over est joué, « GAME OVER! » s'affiche, puis le bouton **Start** réapparaît pour rejouer. Les monstres déjà à l'écran finissent leur trajet en fond jusqu'au prochain **Start**.
+4. Au premier contact avec un monstre : la musique s'arrête, un son de game over est joué, « GAME OVER! » s'affiche, puis l'écran titre (logo et bouton **Start**) réapparaît pour rejouer. Les monstres déjà à l'écran finissent leur trajet en fond jusqu'au prochain **Start**.
 
 ### Contrôles
 
@@ -59,7 +59,7 @@ Le chemin d'apparition des monstres (`MonsterPath`) suit le contour 1080 x 2400 
 .
 ├── project.godot                 # Configuration du projet (écran, entrées, warnings, plugins)
 ├── export_presets.cfg            # Préréglages d'export Android, Web et macOS
-├── icon.png                      # Logo du jeu (icône projet, Web, macOS), 512 x 512
+├── icon.png                      # Logo du jeu (écran titre, icône projet, Web, macOS), 512 x 512
 ├── check.sh                      # Format, lint, analyse statique et tests (local et CI)
 ├── .gutconfig.json               # Configuration de GUT (dossier des tests)
 ├── .github/workflows/ci.yml      # CI GitHub Actions : lance check.sh
@@ -67,6 +67,7 @@ Le chemin d'apparition des monstres (`MonsterPath`) suit le contour 1080 x 2400 
 ├── tools/
 │   └── generate_art.py           # Génère le fond et le logo en pixel art (Python + Pillow)
 ├── test/
+│   ├── test_hud.gd               # Tests de l'écran titre : logo et bouton Start
 │   ├── test_main.gd              # Tests du redémarrage : nettoyage des monstres, timers
 │   └── test_player.gd            # Tests du déplacement, de la zone morte et de la collision
 └── creer-un-jeu-sur-godot-facilement-assets-main/
@@ -79,7 +80,7 @@ Le chemin d'apparition des monstres (`MonsterPath`) suit le contour 1080 x 2400 
     │   ├── main.gd               # Main : score, apparition et nettoyage des monstres, game over
     │   ├── player.gd             # Player : déplacement clavier et tactile, collision, signal hit
     │   ├── monsters.gd           # Monster : animation aléatoire, suppression hors écran
-    │   └── hud.gd                # Hud : messages, score, bouton Start
+    │   └── hud.gd                # Hud : écran titre, messages, score, bouton Start
     ├── art/                      # Sprites, musique, son de game over
     │   ├── graveyard_map.png     # Fond : cimetière 180 x 400, généré
     │   └── icons/                # Icônes Android (lanceur et adaptatives), générées
@@ -94,7 +95,7 @@ Le chemin d'apparition des monstres (`MonsterPath`) suit le contour 1080 x 2400 
 | `main.tscn` | `Node` | Orchestre la partie. Affiche le fond (`Background`, un `TextureRect`). Possède les timers `StartTimer` (2 s, une fois), `ScoreTimer` (1 s) et `MonsterTimer` (0,5 s), le chemin `MonsterPath`, le marqueur `StartPosition` et les lecteurs audio. |
 | `player.tscn` | `Area2D` | Lit les actions `move_*` ou suit le doigt, déplace le joueur à 400 px/s, le borne à l'écran. Émet `hit` au contact d'un corps et désactive sa collision. |
 | `monsters.tscn` | `RigidBody2D` | Sans gravité, `collision_mask = 0` (les monstres ne se heurtent pas entre eux). Joue une animation au hasard ; `VisibleOnScreenNotifier2D` le libère en sortie d'écran. Rejoint le groupe `Monster.GROUP` pour que `main.gd` le supprime au lancement d'une partie. |
-| `hud.tscn` | `CanvasLayer` | Affiche score et messages, émet `start_game` au clic sur Start. |
+| `hud.tscn` | `CanvasLayer` | Affiche score et messages, émet `start_game` au clic sur Start. L'écran titre (`Logo` et `StartButton`) est masqué pendant la partie et revient après le game over. |
 
 ### Flux des signaux
 
