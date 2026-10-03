@@ -12,10 +12,10 @@ func before_each() -> void:
 	add_child_autofree(_hud)
 
 
-func test_title_screen_shows_logo_and_start_button() -> void:
+func test_title_screen_shows_game_name() -> void:
 	# Act & Assert
-	assert_true(_hud._logo.visible)
-	assert_true(_hud._start_button.visible)
+	assert_true(_hud._title_screen.visible)
+	assert_eq(_hud._title.text, str(ProjectSettings.get_setting(Hud.GAME_NAME_SETTING)))
 
 
 func test_start_hides_title_screen_and_starts_game() -> void:
@@ -26,8 +26,7 @@ func test_start_hides_title_screen_and_starts_game() -> void:
 	_hud._on_start_button_pressed()
 
 	# Assert
-	assert_false(_hud._logo.visible)
-	assert_false(_hud._start_button.visible)
+	assert_false(_hud._title_screen.visible)
 	assert_signal_emitted(_hud, "start_game")
 
 
@@ -39,5 +38,4 @@ func test_title_screen_returns_after_game_over() -> void:
 	_hud._show_title_screen()
 
 	# Assert
-	assert_true(_hud._logo.visible)
-	assert_true(_hud._start_button.visible)
+	assert_true(_hud._title_screen.visible)
