@@ -1,3 +1,4 @@
+class_name Main
 extends Node
 
 const MONSTER_MIN_SPEED: float = 150.0
@@ -22,18 +23,29 @@ var score: int
 func _on_game_over() -> void:
 	_music.stop()
 	_game_over_sound.play()
+	# A hit during "GET READY!" must not let the start timer launch the round anyway.
+	_start_timer.stop()
 	_score_timer.stop()
 	_monster_timer.stop()
 	_hud.show_game_over_message()
 
 
 func new_game() -> void:
+	_clear_monsters()
 	_music.play()
 	score = 0
 	_player.start(_start_position.position)
 	_start_timer.start()
 	_hud.update_score(score)
 	_hud.show_message(STARTING_MESSAGE)
+
+
+## Leftover monsters drift on after a game over; they would hit the player on restart.
+## free(), not queue_free(): a physics step can run before the end of the frame,
+## and a monster still in the space would collide with the freshly placed player.
+func _clear_monsters() -> void:
+	for monster in get_tree().get_nodes_in_group(Monster.GROUP):
+		monster.free()
 
 
 func _on_start_timer_timeout() -> void:

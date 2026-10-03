@@ -7,9 +7,9 @@ Jeu d'esquive 2D réalisé avec Godot 4 en suivant la série « Créer son premi
 ### Déroulement d'une partie
 
 1. L'écran d'accueil affiche le score, le message « Dodge the enemies! » et un bouton **Start**.
-2. Un clic sur **Start** lance la musique, place le joueur au centre-bas de l'écran et affiche « GET READY! ».
+2. Un clic sur **Start** supprime les monstres restants de la partie précédente, lance la musique, place le joueur au centre-bas de l'écran et affiche « GET READY! ».
 3. Après 2 secondes, les monstres commencent à apparaître (un toutes les 0,5 s) et le score augmente d'un point par seconde.
-4. Au premier contact avec un monstre : la musique s'arrête, un son de game over est joué, « GAME OVER! » s'affiche, puis le bouton **Start** réapparaît pour rejouer.
+4. Au premier contact avec un monstre : la musique s'arrête, un son de game over est joué, « GAME OVER! » s'affiche, puis le bouton **Start** réapparaît pour rejouer. Les monstres déjà à l'écran finissent leur trajet en fond jusqu'au prochain **Start**.
 
 ### Contrôles
 
@@ -23,7 +23,7 @@ Le clavier est prioritaire sur le tactile. Le joueur ne peut pas sortir de l'éc
 
 ### Monstres
 
-Trois types, choisis au hasard à chaque apparition : `ghost`, `skeleton`, `slime`. Ils naissent sur un point aléatoire du bord de l'écran, partent vers l'intérieur à une vitesse comprise entre 150 et 250 px/s, et sont supprimés dès qu'ils quittent l'écran.
+Trois types, choisis au hasard à chaque apparition : `ghost`, `skeleton`, `slime`. Ils naissent sur un point aléatoire du bord de l'écran, partent vers l'intérieur à une vitesse comprise entre 150 et 250 px/s, et sont supprimés dès qu'ils quittent l'écran ou qu'une nouvelle partie commence.
 
 ## Technique
 
@@ -59,6 +59,7 @@ Le chemin d'apparition des monstres (`MonsterPath`) suit le contour 1080 x 2400 
 ├── .github/workflows/ci.yml      # CI GitHub Actions : lance check.sh
 ├── addons/gut/                   # Framework de tests GUT 9.7.1 (vendu tel quel)
 ├── test/
+│   ├── test_main.gd              # Tests du redémarrage : nettoyage des monstres, timers
 │   └── test_player.gd            # Tests du déplacement, de la zone morte et de la collision
 └── creer-un-jeu-sur-godot-facilement-assets-main/
     ├── scenes/
@@ -67,7 +68,7 @@ Le chemin d'apparition des monstres (`MonsterPath`) suit le contour 1080 x 2400 
     │   ├── monsters.tscn         # Monstre (RigidBody2D)
     │   └── hud.tscn              # Interface (CanvasLayer)
     ├── scripts/
-    │   ├── main.gd               # Boucle de jeu : score, apparition des monstres, game over
+    │   ├── main.gd               # Main : score, apparition et nettoyage des monstres, game over
     │   ├── player.gd             # Player : déplacement clavier et tactile, collision, signal hit
     │   ├── monsters.gd           # Monster : animation aléatoire, suppression hors écran
     │   └── hud.gd                # Hud : messages, score, bouton Start
@@ -82,7 +83,7 @@ Le chemin d'apparition des monstres (`MonsterPath`) suit le contour 1080 x 2400 
 |---|---|---|
 | `main.tscn` | `Node` | Orchestre la partie. Possède les timers `StartTimer` (2 s, une fois), `ScoreTimer` (1 s) et `MonsterTimer` (0,5 s), le chemin `MonsterPath`, le marqueur `StartPosition` et les lecteurs audio. |
 | `player.tscn` | `Area2D` | Lit les actions `move_*` ou suit le doigt, déplace le joueur à 400 px/s, le borne à l'écran. Émet `hit` au contact d'un corps et désactive sa collision. |
-| `monsters.tscn` | `RigidBody2D` | Sans gravité, `collision_mask = 0` (les monstres ne se heurtent pas entre eux). Joue une animation au hasard ; `VisibleOnScreenNotifier2D` le libère en sortie d'écran. |
+| `monsters.tscn` | `RigidBody2D` | Sans gravité, `collision_mask = 0` (les monstres ne se heurtent pas entre eux). Joue une animation au hasard ; `VisibleOnScreenNotifier2D` le libère en sortie d'écran. Rejoint le groupe `Monster.GROUP` pour que `main.gd` le supprime au lancement d'une partie. |
 | `hud.tscn` | `CanvasLayer` | Affiche score et messages, émet `start_game` au clic sur Start. |
 
 ### Flux des signaux
@@ -95,6 +96,7 @@ sequenceDiagram
     participant Monster
 
     HUD->>Main: start_game
+    Note over Main: supprime les monstres restants
     Main->>Player: start(StartPosition)
     Main->>HUD: show_message("GET READY!")
     Note over Main: StartTimer (2 s)
@@ -140,7 +142,7 @@ Quatre vérifications, regroupées dans `check.sh` et lancées par GitHub Action
 | Analyse statique | `godot --import` | Variable non typée, accès non sûr à une propriété ou méthode, variable ou paramètre inutilisé |
 | Tests | [GUT](https://github.com/bitwes/Gut) | Test en échec, ou fichier de test qui ne se charge pas |
 
-L'analyse statique repose sur le parseur de Godot : la section `[debug]` de `project.godot` passe les warnings de typage en erreurs (`2`). Le dossier `addons/` est exclu par Godot. Les scripts déclarent un `class_name` (`Player`, `Hud`, `Monster`) pour que `main.gd` et les tests les manipulent avec un type précis.
+L'analyse statique repose sur le parseur de Godot : la section `[debug]` de `project.godot` passe les warnings de typage en erreurs (`2`). Le dossier `addons/` est exclu par Godot. Les scripts déclarent un `class_name` (`Main`, `Player`, `Hud`, `Monster`) pour que `main.gd` et les tests les manipulent avec un type précis.
 
 Godot et GUT renvoient le code de sortie 0 quand un script ne se charge pas (GUT ignore alors le fichier de test). `check.sh` lit donc la sortie et échoue sur `SCRIPT ERROR`, `Parse Error`, `GUT ERROR` ou `Ignoring script`.
 
@@ -219,7 +221,6 @@ Pour publier (Play Store) : créer un keystore de release et le renseigner dans 
 ## Limites connues
 
 - **Pas de keystore de release** : seul l'export de debug est prêt.
-- **Monstres jamais nettoyés au game over** : ceux encore à l'écran continuent leur trajet après la fin de la partie.
 
 ## Crédits
 
